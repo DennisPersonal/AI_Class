@@ -372,22 +372,28 @@
             })
             .then(res => {
                 if (!res.ok) throw new Error("Edge TTS failed");
-                return res.blob();
+                // 从响应头中取实际音频文件名，构建直接URL
+                return res.json();
             })
-            .then(blob => {
-                const url = URL.createObjectURL(blob);
-                const audio = new Audio(url);
+            .then(data => {
+                if (!data.url) throw new Error("no audio URL");
+                const audio = new Audio(data.url);
                 currentAudio = audio;
                 audio.onended = () => {
-                    URL.revokeObjectURL(url);
                     currentAudio = null;
                     if (loopMode && !isListening && !pendingText) {
                         setTimeout(() => start(false), 300);
                     }
                 };
-                audio.play().catch(() => useBrowserTTS(text));
+                audio.play().catch(function(e) {
+                    console.log('[TTS] Direct URL audio failed:', e);
+                    useBrowserTTS(text);
+                });
             })
-            .catch(() => useBrowserTTS(text));
+            .catch((e) => {
+                console.log('[TTS] Edge TTS failed:', e);
+                useBrowserTTS(text);
+            });
         }
 
         function useBrowserTTS(text) {

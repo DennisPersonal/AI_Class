@@ -264,6 +264,12 @@ def reset_lottery():
     })
 
 
+# 音频文件静态服务
+@app.route('/audio/<filename>')
+def serve_audio(filename):
+    return send_from_directory(AUDIO_DIR, filename)
+
+
 # ==================== Edge TTS 语音合成（微软晓晓，自然中文） ====================
 EDGE_TTS_VOICE = 'zh-CN-XiaoxiaoNeural'
 edge_tts_available = False
@@ -314,11 +320,13 @@ def text_to_speech():
                     '-o', fallback,
                     text
                 ], check=True, capture_output=True, timeout=10)
-                return send_from_directory(AUDIO_DIR, os.path.basename(fallback), mimetype='audio/x-aiff')
+                filepath = fallback
+                generated = True
             except Exception as e2:
                 return jsonify({'error': str(e2)}), 500
 
-    return send_from_directory(AUDIO_DIR, filename, mimetype='audio/mpeg')
+    # 返回JSON包含音频URL，前端用直接URL播放而非blob
+    return jsonify({'url': f'/audio/{os.path.basename(filepath)}'})
 
 
 @app.route('/api/tts/cleanup', methods=['POST'])
