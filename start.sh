@@ -16,12 +16,26 @@ echo ""
 
 # ==================== 1. 检查 Python ====================
 echo "🔍 1/5 检测 Python 环境..."
-if ! command -v python3 &> /dev/null; then
-    echo "   ❌ 未找到 python3，请先安装 Python 3.8+"
+
+# 如果装了python3.11，优先用
+if command -v python3.11 &> /dev/null; then
+    PY_CMD="python3.11"
+elif command -v python3 &> /dev/null; then
+    PY_CMD="python3"
+else
+    echo "   ❌ 未找到 python3"
     exit 1
 fi
-PY_VER=$(python3 --version 2>&1)
+
+PY_VER=$($PY_CMD --version 2>&1)
 echo "   ✅ $PY_VER"
+
+# 检查版本号，如果 < 3.11 给出升级建议
+PY_MINOR=$(echo $PY_VER | sed -n 's/Python 3\.\([0-9]*\).*/\1/p')
+if [ "$PY_MINOR" -lt 11 ]; then
+    echo "   💡 建议升级 Python 3.11+ 以获得更好的兼容性"
+    echo "      brew install python@3.11"
+fi
 
 # ==================== 2. 检查依赖 ====================
 echo ""
@@ -34,7 +48,7 @@ MISSING=0
 check_dep() {
     local dep=$1
     local optional=$2
-    if python3 -c "import $dep" 2>/dev/null; then
+    if $PY_CMD -c "import $dep" 2>/dev/null; then
         echo "   ✅ $dep 已安装"
         return 0
     else
@@ -44,7 +58,7 @@ check_dep() {
             echo "   ⏳ $dep 未安装，正在自动安装..."
         fi
         pip3 install "$dep" -q 2>/dev/null
-        if python3 -c "import $dep" 2>/dev/null; then
+        if $PY_CMD -c "import $dep" 2>/dev/null; then
             echo "   ✅ $dep 安装成功"
             return 0
         else
@@ -109,7 +123,7 @@ fi
 # ==================== 4. 清理旧缓存 ====================
 echo ""
 echo "🧹 4/5 清理旧音频缓存..."
-python3 -c "
+$PY_CMD -c "
 import os
 cache_dir = '$PROJECT_DIR/audio_cache'
 if os.path.isdir(cache_dir):
@@ -128,7 +142,7 @@ else:
 echo ""
 echo "🚀 5/5 启动服务器..."
 cd "$PROJECT_DIR"
-PORT=$PORT nohup python3 app.py > "$LOG_FILE" 2>&1 &
+PORT=$PORT nohup $PY_CMD app.py > "$LOG_FILE" 2>&1 &
 SERVER_PID=$!
 
 # 等待服务就绪
