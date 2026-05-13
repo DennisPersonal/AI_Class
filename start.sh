@@ -27,27 +27,47 @@ echo "   ✅ $PY_VER"
 echo ""
 echo "📦 2/5 检测 Python 依赖..."
 DEPS=("flask" "requests")
+# edge_tts 可选，不阻塞启动
+OPT_DEPS=("edge_tts")
 MISSING=0
-for dep in "${DEPS[@]}"; do
+
+check_dep() {
+    local dep=$1
+    local optional=$2
     if python3 -c "import $dep" 2>/dev/null; then
         echo "   ✅ $dep 已安装"
+        return 0
     else
-        echo "   ⏳ $dep 未安装，正在自动安装..."
-        pip3 install "$dep" -q
+        if [ "$optional" = "true" ]; then
+            echo "   ⏳ $dep 未安装，尝试自动安装..."
+        else
+            echo "   ⏳ $dep 未安装，正在自动安装..."
+        fi
+        pip3 install "$dep" -q 2>/dev/null
         if python3 -c "import $dep" 2>/dev/null; then
             echo "   ✅ $dep 安装成功"
+            return 0
         else
-            echo "   ❌ $dep 安装失败"
-            MISSING=1
+            if [ "$optional" = "true" ]; then
+                echo "   ⚠️  $dep 安装失败（可选依赖，不影响启动）"
+                return 0
+            else
+                echo "   ❌ $dep 安装失败"
+                MISSING=1
+                return 1
+            fi
         fi
     fi
-done
+}
 
-# 检测 macOS say 命令（TTS 用）
+for dep in "${DEPS[@]}"; do check_dep "$dep" "false"; done
+for dep in "${OPT_DEPS[@]}"; do check_dep "$dep" "true"; done
+
+# 检测 macOS say 命令（TTS fallback 用）
 if command -v say &> /dev/null; then
     echo "   ✅ macOS TTS (say) 已就绪"
 else
-    echo "   ⚠️  macOS TTS (say) 不可用，将使用浏览器语音播报"
+    echo "   ⚠️  macOS TTS (say) 不可用，语音将使用浏览器 TTS"
 fi
 
 # 检测 lsof（端口检测用）
@@ -58,7 +78,7 @@ fi
 
 if [ "$MISSING" -eq 1 ]; then
     echo ""
-    echo "❌ 依赖安装不完整，请手动安装后重试"
+    echo "❌ 必要依赖安装不完整，请手动安装后重试"
     exit 1
 fi
 

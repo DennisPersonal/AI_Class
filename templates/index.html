@@ -3,7 +3,14 @@
 <head>
     <meta charset="utf-8">
     <title>AI小课堂 - 4年级专属</title>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <!-- 尝试国内CDN，如果加载失败显示提示 -->
+    <script>
+    window.__THREE_LOADED = false;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"
+      onload="window.__THREE_LOADED = true;"
+      onerror="document.getElementById('loading-error') && (document.getElementById('loading-error').style.display='block')">
+    </script>
     <style>
         *{
             margin:0;
@@ -258,6 +265,13 @@
 </head>
 
 <body>
+<div id="loading-error" style="display:none; position:fixed; top:0; left:0; width:100%; padding:20px; background:#ff4444; color:white; text-align:center; z-index:9999; font-size:18px;">
+    ⚠️ 3D资源加载失败，请检查网络连接（可能需要刷新页面）
+</div>
+<div id="loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a2e; display:flex; align-items:center; justify-content:center; z-index:9998; color:#4fc3f7; font-size:24px; flex-direction:column">
+    <div style="font-size:48px; margin-bottom:16px">🌟</div>
+    <div>AI小课堂加载中...</div>
+</div>
     <h1 class="title">
         AI小课堂——解锁科技奥秘
         <span class="badge" id="countBadge">抽取人数：5人</span>
@@ -995,6 +1009,7 @@
 
         // 启动
         window.onload = () => {
+            document.getElementById('loading').style.display = 'none';
             initAvatar();
             init3DLottery();
             initRec();

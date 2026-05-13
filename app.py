@@ -254,10 +254,14 @@ def reset_lottery():
 
 
 # ==================== Edge TTS 语音合成（微软晓晓，自然中文） ====================
-import edge_tts
-import asyncio
+import importlib.util
 
 EDGE_TTS_VOICE = 'zh-CN-XiaoxiaoNeural'
+edge_tts_available = importlib.util.find_spec('edge_tts') is not None
+
+if edge_tts_available:
+    import edge_tts
+    import asyncio
 
 @app.route('/api/tts', methods=['POST'])
 def text_to_speech():
@@ -269,27 +273,34 @@ def text_to_speech():
     filepath = os.path.join(AUDIO_DIR, filename)
 
     if not os.path.exists(filepath):
-        try:
-            asyncio.run(edge_tts.Communicate(
-                text,
-                voice=EDGE_TTS_VOICE,
-                rate='+10%',  # 稍快一点，更适合课堂
-                pitch='+0Hz'
-            ).save(filepath))
-        except Exception as e:
-            print(f"Edge TTS error: {e}")
-            # Fallback: 用旧macOS say
-            fallback = filepath.rsplit('.', 1)[0] + '.aiff'
+        generated = False
+
+        # 方案1: Edge TTS（如果可用）
+        if edge_tts_available:
             try:
+                asyncio.run(edge_tts.Communicate(
+                    text,
+                    voice=EDGE_TTS_VOICE,
+                    rate='+10%',
+                    pitch='+0Hz'
+                ).save(filepath))
+                generated = True
+            except Exception as e:
+                print(f"Edge TTS error: {e}")
+
+        # 方案2: fallback到macOS say
+        if not generated:
+            try:
+                fallback = filepath.rsplit('.', 1)[0] + '.aiff'
                 subprocess.run([
                     'say', '-v', 'Tingting',
                     '-r', '175',
                     '-o', fallback,
                     text
                 ], check=True, capture_output=True, timeout=10)
+                return send_from_directory(AUDIO_DIR, os.path.basename(fallback), mimetype='audio/x-aiff')
             except Exception as e2:
                 return jsonify({'error': str(e2)}), 500
-            return send_from_directory(AUDIO_DIR, os.path.basename(fallback), mimetype='audio/x-aiff')
 
     return send_from_directory(AUDIO_DIR, filename, mimetype='audio/mpeg')
 
