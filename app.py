@@ -76,12 +76,23 @@ def chinese_to_number(s: str):
 
 @app.route('/')
 def index():
-    return render_template('index.html', students=students)
+    try:
+        return render_template('index.html', students=students)
+    except Exception as e:
+        return f"<h1>500: 模板渲染错误</h1><pre>{e}</pre>", 500
+
+
+@app.route('/ping')
+def ping():
+    return "pong", 200
 
 
 @app.route('/guide')
 def guide():
-    return render_template('guide.html')
+    try:
+        return render_template('guide.html')
+    except Exception as e:
+        return f"<h1>500: 指南页面渲染错误</h1><pre>{e}</pre>", 500
 
 
 # AI 对话接口
