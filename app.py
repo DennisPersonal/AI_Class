@@ -289,15 +289,20 @@ def text_to_speech():
         # 方案1: Edge TTS（如果可用）
         if edge_tts_available:
             try:
-                asyncio.run(edge_tts.Communicate(
+                print(f"[TTS] Calling Edge TTS: '{text[:50]}...'")
+                communicate = edge_tts.Communicate(
                     text,
                     voice=EDGE_TTS_VOICE,
                     rate='+10%',
                     pitch='+0Hz'
-                ).save(filepath))
+                )
+                asyncio.run(communicate.save(filepath))
+                print(f"[TTS] Edge TTS success -> {filepath}")
                 generated = True
             except Exception as e:
-                print(f"Edge TTS error: {e}")
+                import traceback
+                print(f"[TTS] Edge TTS error: {e}")
+                traceback.print_exc()
 
         # 方案2: fallback到macOS say
         if not generated:
