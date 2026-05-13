@@ -77,6 +77,14 @@ check_dep() {
 for dep in "${DEPS[@]}"; do check_dep "$dep" "false"; done
 for dep in "${OPT_DEPS[@]}"; do check_dep "$dep" "true"; done
 
+# 如果edge_tts没装上，显式指导安装
+if ! $PY_CMD -c "import edge_tts" 2>/dev/null; then
+    echo "   💡 Edge TTS（高质量中文语音）安装失败，可用以下命令手动安装："
+    echo "      pip3 install edge-tts -i https://pypi.tuna.tsinghua.edu.cn/simple"
+    echo "      或直接: brew install python-edge-tts (macOS 14+)"
+    echo "      当前将使用 macOS 系统语音 fallback"
+fi
+
 # 检测 macOS say 命令（TTS fallback 用）
 if command -v say &> /dev/null; then
     echo "   ✅ macOS TTS (say) 已就绪"

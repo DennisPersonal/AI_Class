@@ -265,14 +265,14 @@ def reset_lottery():
 
 
 # ==================== Edge TTS 语音合成（微软晓晓，自然中文） ====================
-import importlib.util
-
 EDGE_TTS_VOICE = 'zh-CN-XiaoxiaoNeural'
-edge_tts_available = importlib.util.find_spec('edge_tts') is not None
-
-if edge_tts_available:
+edge_tts_available = False
+try:
     import edge_tts
     import asyncio
+    edge_tts_available = True
+except ImportError:
+    print("⚠️  Edge TTS 未安装，使用 macOS 系统语音 fallback")
 
 @app.route('/api/tts', methods=['POST'])
 def text_to_speech():
