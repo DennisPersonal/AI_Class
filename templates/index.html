@@ -265,6 +265,7 @@
 </head>
 
 <body>
+<div id="js-error" style="display:none; position:fixed; bottom:0; left:0; width:100%; padding:12px 20px; background:#222; color:#ff6666; text-align:left; z-index:9999; font-size:14px; font-family:monospace; max-height:200px; overflow-y:auto; border-top:2px solid #ff4444;"></div>
 <div id="loading-error" style="display:none; position:fixed; top:0; left:0; width:100%; padding:20px; background:#ff4444; color:white; text-align:center; z-index:9999; font-size:18px;">
     ⚠️ 3D资源加载失败，请检查网络连接（可能需要刷新页面）
 </div>
@@ -300,6 +301,14 @@
     </div>
 
     <script>
+        // 全局JS错误捕获（显示在屏幕底部，方便远距离调试）
+        window.onerror = function(msg, url, line, col, err) {
+            var el = document.getElementById('js-error');
+            if (el) {
+                el.style.display = 'block';
+                el.innerHTML += '<div>❌ ' + (err ? err.stack || msg : msg) + '</div>';
+            }
+        };
         const students = {{ students | tojson }};
         const chatBox = document.getElementById('chatBox');
         const tip = document.getElementById('tip');
@@ -1009,11 +1018,23 @@
 
         // 启动
         window.onload = () => {
-            document.getElementById('loading').style.display = 'none';
-            initAvatar();
-            init3DLottery();
-            initRec();
-            initState();
+            // 确保 Three.js 加载完成
+            var checkThree = setInterval(function() {
+                if (typeof THREE !== 'undefined' && THREE.Scene) {
+                    clearInterval(checkThree);
+                    document.getElementById('loading').style.display = 'none';
+                    try { initAvatar(); } catch(e) { console.error('initAvatar error:', e); }
+                    try { init3DLottery(); } catch(e) { console.error('init3DLottery error:', e); }
+                    try { initRec(); } catch(e) { console.error('initRec error:', e); }
+                    try { initState(); } catch(e) { console.error('initState error:', e); }
+                }
+            }, 100);
+            // 10秒超时提示
+            setTimeout(function() {
+                if (typeof THREE === 'undefined' || !THREE.Scene) {
+                    document.getElementById('loading').innerHTML = '⏳ Three.js 加载超时，请检查网络连接或刷新页面';
+                }
+            }, 10000);
         };
     </script>
 </body>
