@@ -1,0 +1,3 @@
+# 去 DeepSeek 官网申请 API Key
+DEEPSEEK_API_KEY = "sk-13a708e7061e45f4853f02ccabe1fbf5"
+STUDENT_COUNT = 43

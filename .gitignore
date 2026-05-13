@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+audio_cache/
+server.log
+.DS_Store

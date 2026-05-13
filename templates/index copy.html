@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>AI小课堂 - 4年级专属</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",sans-serif}
+        body{background:linear-gradient(135deg,#e0f7fa,#f3e5f5);height:100vh;overflow:hidden}
+        .title{text-align:center;color:#1a237e;padding:10px;font-size:28px;font-weight:bold}
+        .main{display:flex;height:calc(100% - 70px);padding:10px;gap:10px}
+
+        .left{width:22%;background:rgba(255,255,255,0.95);border-radius:12px;padding:10px;display:flex;flex-direction:column}
+        #avatarCanvas{height:40%;border-radius:8px;margin-bottom:8px}
+        .robot-name{text-align:center;color:#0288d1;font-weight:bold;margin-bottom:6px}
+        .chat-box{flex:1;background:#f6fafe;border-radius:8px;padding:8px;overflow-y:auto;font-size:14px}
+        .chat-item{margin-bottom:8px;padding:6px;border-radius:6px}
+        .user{background:#e3f2fd;text-align:right}
+        .ai{background:#fce4ec;text-align:left}
+        .btn-group{display:flex;gap:8px;margin-top:8px}
+        .btn{flex:1;padding:10px;border:none;border-radius:8px;color:#fff;font-weight:bold;cursor:pointer}
+        .btn1{background:#0288d1}
+        .btn2{background:#7b1fa2}
+        .btn3{background:#d32f2f}
+
+        .right{width:78%;background:#050818;border-radius:12px;position:relative}
+        #lotteryCanvas{width:100%;height:100%}
+        .tip{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);
+             font-size:28px;color:#ffd700;font-weight:bold;text-shadow:0 0 10px #ffab00}
+    </style>
+</head>
+
+<body>
+    <h1 class="title">AI小课堂——解锁科技奥秘</h1>
+    <div class="main">
+        <div class="left">
+            <div id="avatarCanvas"></div>
+            <div class="robot-name">小艾（AI小管家）</div>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="btn-group">
+                <button class="btn btn1" id="btnOnce">🎤 单次对话</button>
+                <button class="btn btn2" id="btnLoop">🔁 持续监听</button>
+                <button class="btn btn3" id="btnStop">🛑 停止</button>
+            </div>
+        </div>
+
+        <div class="right">
+            <div id="lotteryCanvas"></div>
+            <div class="tip" id="tip">点击按钮开始语音互动</div>
+        </div>
+    </div>
+
+    <script>
+        const students = {{ students | tojson }};
+        const chatBox = document.getElementById('chatBox');
+        const tip = document.getElementById('tip');
+
+        // 全局语音播报（100%有声音）
+        function speak(text) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'zh-CN';
+            utter.rate = 1.1;
+            utter.volume = 1;
+            window.speechSynthesis.speak(utter);
+        }
+
+        // ========================== 语音识别控制 ==========================
+        let rec;
+        let isListening = false;
+        let loopMode = false;
+
+        function initRec() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return alert("浏览器不支持语音");
+            rec = new SR(); rec.lang = "zh-CN"; rec.interimResults = false;
+            rec.onend = () => { isListening = false; if(loopMode) start() };
+            rec.onresult = async (e) => {
+                const text = e.results[0][0].transcript;
+                addMsg("user", text);
+
+                const res = await fetch("/api/ai", {
+                    method:"POST", headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({text})
+                });
+                const data = await res.json();
+                addMsg("ai", data.reply);
+                speak(data.reply);
+                doAction(data.action);
+
+                if(data.command === "start"){
+                    rotating = true;
+                    tip.innerText = "🎲 抽奖中...";
+                    resetAvatars();
+                }
+                if(data.command === "stop"){
+                    rotating = false;
+                    const w = await (await fetch("/api/lottery",{method:"POST"})).json();
+                    tip.innerText = `🎉 恭喜 ${w.winner.name} 中奖！`;
+                    showWinner(w.winner);
+                }
+            };
+        }
+
+        function start(){ if(!rec) initRec(); if(!isListening){ isListening = true; rec.start(); } }
+        function stop(){ loopMode = false; isListening = false; if(rec) rec.stop(); }
+        document.getElementById('btnOnce').onclick = ()=>{ loopMode=false; start(); }
+        document.getElementById('btnLoop').onclick = ()=>{ loopMode=true; start(); }
+        document.getElementById('btnStop').onclick = stop;
+
+        function addMsg(role, txt){
+            const d = document.createElement('div');
+            d.className = `chat-item ${role}`;
+            d.innerText = txt;
+            chatBox.appendChild(d);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // ========================== 3D数字人 ==========================
+        let robot;
+        function initAvatar() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75,0.8,0.1,100);
+            const renderer = new THREE.WebGLRenderer({alpha:true,antialias:true});
+            renderer.setSize(300,300);
+            document.getElementById('avatarCanvas').appendChild(renderer.domElement);
+
+            robot = new THREE.Group();
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.7),new THREE.MeshPhongMaterial({color:0xffe0bd}));
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,1.3),new THREE.MeshPhongMaterial({color:0x64b5f6}));
+            body.position.y = -1.2;
+            robot.add(head,body);
+            scene.add(robot,new THREE.AmbientLight(0xffffff,1));
+            camera.position.z = 3;
+
+            function animate(){requestAnimationFrame(animate);robot.rotation.y+=0.002;renderer.render(scene,camera);}
+            animate();
+        }
+
+        function doAction(act){
+            if(act==="talk") robot.position.y=0;
+            if(act==="wave") robot.position.y=0.15;
+            if(act==="clap") robot.position.y=-0.15;
+            setTimeout(()=>robot.position.y=0,400);
+        }
+
+        // ========================== 3D球面抽奖 ==========================
+        let rotating = false;
+        let sphereGroup;
+        let avatarSprites = [];
+        let originalPositions = [];
+
+        function init3DLottery() {
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050818);
+
+            for(let i=0;i<1000;i++){
+                const star = new THREE.Mesh(new THREE.SphereGeometry(0.04),new THREE.MeshBasicMaterial({color:0xffffff}));
+                star.position.set((Math.random()-0.5)*100,(Math.random()-0.5)*100,(Math.random()-0.5)*100);
+                scene.add(star);
+            }
+
+            const sun = new THREE.Mesh(
+                new THREE.SphereGeometry(2),
+                new THREE.MeshBasicMaterial({color:0xffab00})
+            );
+            scene.add(sun);
+
+            sphereGroup = new THREE.Group();
+            const r = 10;
+            students.forEach((s,i)=>{
+                const tex = new THREE.TextureLoader().load(s.avatar);
+                const sprite = new THREE.Sprite(new THREE.SpriteMaterial({map:tex}));
+                sprite.userData = s;
+                sprite.scale.set(2.2,2.2,1);
+
+                const phi = Math.acos(-1 + (2*i)/43);
+                const theta = Math.sqrt(43*Math.PI)*phi;
+                const x = r*Math.sin(phi)*Math.cos(theta);
+                const y = r*Math.sin(phi)*Math.sin(theta);
+                const z = r*Math.cos(phi);
+                sprite.position.set(x,y,z);
+                originalPositions.push({x,y,z});
+                avatarSprites.push(sprite);
+                sphereGroup.add(sprite);
+            });
+            scene.add(sphereGroup);
+
+            const camera = new THREE.PerspectiveCamera(60,16/9,0.1,100);
+            camera.position.z = 22;
+            const renderer = new THREE.WebGLRenderer({antialias:true});
+            renderer.setSize(window.innerWidth*0.78,window.innerHeight-70);
+            document.getElementById('lotteryCanvas').appendChild(renderer.domElement);
+
+            function animate(){
+                requestAnimationFrame(animate);
+                if(rotating){
+                    sphereGroup.rotation.x += 0.005;
+                    sphereGroup.rotation.y += 0.01;
+                }
+                renderer.render(scene,camera);
+            }
+            animate();
+        }
+
+        // 重置所有头像（修复：第二次抽奖异常）
+        function resetAvatars() {
+            avatarSprites.forEach((s, i) => {
+                s.material.opacity = 1;
+                s.scale.set(2.2,2.2,1);
+                s.position.set(originalPositions[i].x, originalPositions[i].y, originalPositions[i].z);
+            });
+        }
+
+        // 中奖动画（居中 + 放大 + 发光）
+        function showWinner(win){
+            resetAvatars();
+            const target = avatarSprites.find(x=>x.userData.id===win.id);
+            if(target){
+                target.position.set(0,0,0);
+                target.scale.set(6,6,1);
+                target.material.opacity = 1;
+                new Audio('https://qiniu.xiaobotalk.com/audio/win.mp3').play();
+                speak(`恭喜${win.name}中奖！`);
+            }
+        }
+
+        // 启动
+        window.onload = ()=>{ initAvatar(); init3DLottery(); initRec(); };
+    </script>
+</body>
+</html>

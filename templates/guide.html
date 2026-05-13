@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>AI小课堂 - 使用指南</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei","PingFang SC",sans-serif}
+        body{
+            background:linear-gradient(135deg,#0c1445 0%,#1a103f 50%,#2a0845 100%);
+            min-height:100vh;
+            color:#e0e0e0;
+            padding:30px 40px 60px;
+        }
+        .container{max-width:900px;margin:0 auto}
+
+        h1{
+            text-align:center;
+            font-size:32px;
+            color:#64ffda;
+            text-shadow:0 0 18px rgba(100,255,218,0.4);
+            margin-bottom:10px;
+        }
+        .subtitle{
+            text-align:center;
+            color:#90a4ae;
+            margin-bottom:40px;
+            font-size:15px;
+        }
+
+        .card{
+            background:rgba(15,23,52,0.7);
+            border:1px solid rgba(100,255,218,0.15);
+            border-radius:16px;
+            padding:24px 28px;
+            margin-bottom:24px;
+            backdrop-filter:blur(6px);
+            transition:border-color 0.2s;
+        }
+        .card:hover{border-color:rgba(100,255,218,0.35)}
+
+        h2{
+            color:#ffd740;
+            font-size:20px;
+            margin-bottom:14px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+        h2 .icon{font-size:24px}
+
+        h3{
+            color:#80cbc4;
+            font-size:16px;
+            margin:18px 0 8px;
+        }
+
+        p,li{line-height:1.8;font-size:15px;color:#cfd8dc}
+        ul{padding-left:20px;margin:6px 0}
+        li{margin-bottom:4px}
+
+        code{
+            background:rgba(100,255,218,0.1);
+            color:#64ffda;
+            padding:2px 8px;
+            border-radius:6px;
+            font-size:14px;
+            font-family:"SF Mono","Fira Code",monospace;
+        }
+
+        .cmd-block{
+            background:rgba(0,0,0,0.4);
+            border:1px solid #37474f;
+            border-radius:10px;
+            padding:14px 18px;
+            margin:10px 0;
+            font-family:"SF Mono","Fira Code",monospace;
+            font-size:14px;
+            color:#e0e0e0;
+            overflow-x:auto;
+        }
+
+        .tag{
+            display:inline-block;
+            padding:2px 10px;
+            border-radius:12px;
+            font-size:12px;
+            font-weight:bold;
+            margin-right:6px;
+        }
+        .tag-voice{background:rgba(33,150,243,0.25);color:#64b5f6;border:1px solid rgba(33,150,243,0.3)}
+        .tag-btn{background:rgba(156,39,176,0.25);color:#ce93d8;border:1px solid rgba(156,39,176,0.3)}
+        .tag-auto{background:rgba(255,215,0,0.2);color:#ffd740;border:1px solid rgba(255,215,0,0.3)}
+
+        .badge{
+            display:inline-block;
+            background:rgba(255,215,0,0.15);
+            color:#ffd740;
+            padding:1px 10px;
+            border-radius:10px;
+            font-size:13px;
+            border:1px solid rgba(255,215,0,0.2);
+            margin-left:6px;
+        }
+
+        .warning{
+            background:rgba(255,87,34,0.1);
+            border:1px solid rgba(255,87,34,0.2);
+            border-radius:10px;
+            padding:12px 16px;
+            margin:10px 0;
+            color:#ffab91;
+            font-size:14px;
+        }
+
+        .nav-bar{
+            text-align:center;
+            margin:30px 0;
+        }
+        .nav-bar a{
+            display:inline-block;
+            padding:10px 30px;
+            background:linear-gradient(135deg,#0288d1,#03a9f4);
+            color:#fff;
+            text-decoration:none;
+            border-radius:10px;
+            font-weight:bold;
+            transition:0.2s;
+            box-shadow:0 4px 12px rgba(3,169,244,0.3);
+        }
+        .nav-bar a:hover{
+            transform:translateY(-2px);
+            box-shadow:0 6px 20px rgba(3,169,244,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📖 AI小课堂 使用指南</h1>
+        <p class="subtitle">4年级 AI 趣味课堂 · 语音互动 + 3D 抽奖系统</p>
+
+        <div class="nav-bar">
+            <a href="/">🏠 返回主页</a>
+        </div>
+
+        <!-- 一、概览 -->
+        <div class="card">
+            <h2><span class="icon">🎯</span> 系统概览</h2>
+            <p>AI小课堂是一个面向4年级学生的互动教学系统，包含三大核心功能：</p>
+            <ul>
+                <li><strong>3D数字人"小艾"</strong> — AI助教姐姐，用语音跟同学们互动</li>
+                <li><strong>元宇宙3D抽奖</strong> — 43位同学球面头像旋转 + 语音指令抽取</li>
+                <li><strong>语音识别 + AI对话</strong> — 支持麦克风语音问答，用 DeepSeek 生成回复</li>
+            </ul>
+        </div>
+
+        <!-- 二、启动与关闭 -->
+        <div class="card">
+            <h2><span class="icon">🚀</span> 启动与关闭</h2>
+
+            <h3>启动系统</h3>
+            <p>打开终端，进入项目目录，执行：</p>
+            <div class="cmd-block">cd /Users/dennisduan/Documents/AI_Class_4/ai-class<br>./start.sh</div>
+            <p>脚本会自动检查 Python、Flask 依赖，检测端口占用，启动后在浏览器自动打开系统页面。</p>
+            <p>服务启动后浏览器访问：<code>http://localhost:5000</code></p>
+
+            <h3>关闭系统</h3>
+            <p>在终端中执行：</p>
+            <div class="cmd-block">cd /Users/dennisduan/Documents/AI_Class_4/ai-class<br>./shutdown.sh</div>
+            <p>脚本会查找占用 5000 端口的进程并安全关闭，可选择是否清理运行日志。</p>
+
+            <div class="warning">⚠️ 如果修改了代码需要重启，请先 shutdown 再 start。</div>
+        </div>
+
+        <!-- 三、语音交互 -->
+        <div class="card">
+            <h2><span class="icon">🎤</span> 语音交互</h2>
+            <p>系统支持两种语音输入模式（需要 Chrome 浏览器）：</p>
+            <ul>
+                <li><span class="tag tag-btn">单次对话</span> 点击后说一句话，识别后自动停止</li>
+                <li><span class="tag tag-btn">持续监听</span> 点击后会一直监听，每次识别到说话后自动再次开始</li>
+                <li><span class="tag tag-btn">停止</span> 随时停止语音监听</li>
+            </ul>
+            <p><br><strong>语音会做两件事：</strong></p>
+            <ul>
+                <li><span class="tag tag-voice">正常问答</span> 普通语音会发给 DeepSeek AI 回答，小艾会回复你</li>
+                <li><span class="tag tag-auto">语音指令</span> 特定指令会触发系统动作（见下节）</li>
+            </ul>
+            <div class="warning">💡 课堂建议使用 <strong>持续监听</strong> 模式，老师只需说话，无需手动操作。</div>
+        </div>
+
+        <!-- 四、语音指令 -->
+        <div class="card">
+            <h2><span class="icon">📣</span> 语音指令大全</h2>
+
+            <h3>🎲 开始抽取同学</h3>
+            <p>触发 3D 抽奖旋转动画，然后一次抽取 N 位同学并在屏幕中央展示中奖者姓名。</p>
+            <p><em>"开始抽取同学"</em> — 只这一句话会触发抽奖，其他普通语音不会触发。</p>
+
+            <h3>🔢 设定一次抽取N个</h3>
+            <p>设定下次抽取的人数，默认值是 <strong>5</strong> 人。</p>
+            <p>说 <em>"设定一次抽取3个"</em> — 系统回复 <strong>"收到设定指令，下次抽取人数为3人"</strong>。</p>
+            <p>数字可以改成任意正整数（1 ~ 43）。</p>
+            <p>设定后右上角徽章会实时更新。</p>
+
+            <h3>🔄 不重复抽取</h3>
+            <p>已中奖的同学 <strong>不会再次被抽中</strong>。当所有 43 人都抽完后，系统自动复位，全部同学重新参与抽取。</p>
+            <p>也可以点击右上角 <strong>🔄 重置抽奖</strong> 按钮手动复位。</p>
+        </div>
+
+        <!-- 五、3D抽奖界面 -->
+        <div class="card">
+            <h2><span class="icon">🌟</span> 3D 抽奖界面说明</h2>
+            <ul>
+                <li><strong>头像球面分布</strong> — 43 位同学的头像均匀分布在球体表面，匀速自转</li>
+                <li><strong>抽奖中</strong> — 球体加速旋转，屏幕底部显示"抽奖进行中…"</li>
+                <li><strong>中奖展示</strong> — 中奖的 N 个头像移动到屏幕中央并放大，播放欢呼音效</li>
+                <li><strong>状态显示</strong> — 底部显示"已抽取 X/Y 人"，实时更新</li>
+                <li><strong>重置按钮</strong> — 右上角橙色按钮，一键清空中奖记录重新开始</li>
+            </ul>
+        </div>
+
+        <!-- 六、编程说明 -->
+        <div class="card">
+            <h2><span class="icon">⚙️</span> 配置 & 二次开发</h2>
+
+            <h3>修改学生名单</h3>
+            <p>编辑 <code>app.py</code> 中的 <code>students</code> 列表，替换为真实姓名和头像地址：</p>
+            <div class="cmd-block">students = [<br>    {"id": 1, "name": "张三", "avatar": "头像URL"},<br>    {"id": 2, "name": "李四", "avatar": "头像URL"},<br>    ...<br>]</div>
+
+            <h3>修改默认抽取人数</h3>
+            <p>编辑 <code>app.py</code> 中 <code>draw_count = 5</code> 的数值。</p>
+
+            <h3>更换 DeepSeek API Key</h3>
+            <p>编辑 <code>app.py</code> 中的 <code>DEEPSEEK_API_KEY</code> 变量。</p>
+
+            <h3>更换端口</h3>
+            <p>编辑 <code>app.py</code> 最后一行 <code>port=5000</code>，同步修改 <code>start.sh</code> 和 <code>shutdown.sh</code> 中的 <code>PORT=5000</code>。</p>
+
+            <h3>项目文件结构</h3>
+            <div class="cmd-block">AI_Class_4/<br>├── Design_document/<br>│   └── 系统需求和UI实现.txt<br>├── ai-class/<br>│   ├── app.py          ← Flask 后端<br>│   ├── config.py       ← 配置文件<br>│   ├── start.sh        ← 启动脚本 <span class="badge">新</span><br>│   ├── shutdown.sh     ← 关闭脚本 <span class="badge">新</span><br>│   ├── server.log      ← 运行日志<br>│   └── templates/<br>│       ├── index.html  ← 主界面（含3D抽奖+语音）<br>│       └── guide.html  ← 使用指南 <span class="badge">新</span></div>
+        </div>
+
+        <!-- 七、故障排查 -->
+        <div class="card">
+            <h2><span class="icon">🔧</span> 常见问题</h2>
+
+            <h3>打开页面后3D不显示？</h3>
+            <ul>
+                <li>确认使用 Chrome 浏览器</li>
+                <li>检查网络，Three.js CDN 是否加载成功</li>
+                <li>刷新页面重试</li>
+            </ul>
+
+            <h3>语音识别没反应？</h3>
+            <ul>
+                <li><strong>必须用 Chrome</strong>，Safari/Firefox 不支持 Web Speech API</li>
+                <li>检查浏览器麦克风权限是否已允许</li>
+                <li>点击"停止"后再点击"单次对话"重新开始</li>
+            </ul>
+
+            <h3>服务启动失败？</h3>
+            <ul>
+                <li>检查 5000 端口是否被其他程序占用：<code>lsof -i :5000</code></li>
+                <li>检查 <code>server.log</code> 日志文件查看错误信息</li>
+                <li>确认 Python 3.8+ 已安装：<code>python3 --version</code></li>
+            </ul>
+
+            <h3>AI 对话没有回复？</h3>
+            <ul>
+                <li>检查 DeepSeek API Key 是否有效</li>
+                <li>检查网络是否能访问 api.deepseek.com</li>
+                <li>普通语音问答依赖 API，不可用时会自动回复"我听到啦：……"</li>
+            </ul>
+        </div>
+
+        <div class="nav-bar">
+            <a href="/">🏠 返回主页</a>
+        </div>
+
+        <p class="subtitle" style="margin-top:40px">AI小课堂 4年级专属 · 2026</p>
+    </div>
+</body>
+</html>

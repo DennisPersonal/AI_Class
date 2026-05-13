@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>AI小课堂 - 4年级专属</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:"Microsoft YaHei", sans-serif;
+        }
+
+        body{
+            background:linear-gradient(135deg, #0c1445, #2a0845, #1a103f);
+            height:100vh;
+            overflow:hidden;
+        }
+
+        .title{
+            text-align:center;
+            color:#fff;
+            padding:12px;
+            font-size:30px;
+            font-weight:bold;
+            text-shadow:0 0 15px #64ffda;
+            background:rgba(0,0,0,0.2);
+            border-bottom:2px solid rgba(100,255,218,0.3);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:20px;
+        }
+        .title .badge{
+            font-size:16px;
+            color:#ffd700;
+            background:rgba(255,215,0,0.15);
+            border:1px solid rgba(255,215,0,0.4);
+            border-radius:20px;
+            padding:4px 14px;
+            text-shadow:none;
+        }
+        .title .guide-link{
+            position:absolute;
+            right:20px;
+            font-size:14px;
+            color:#90a4ae;
+            text-decoration:none;
+            padding:6px 16px;
+            border:1px solid rgba(144,164,174,0.3);
+            border-radius:20px;
+            transition:0.2s;
+        }
+        .title .guide-link:hover{
+            color:#64ffda;
+            border-color:#64ffda;
+            background:rgba(100,255,218,0.08);
+        }
+        .title{position:relative}
+
+        .main{
+            display:flex;
+            height:calc(100% - 75px);
+            padding:15px;
+            gap:16px;
+        }
+
+        /* ===================== 左侧面板 ===================== */
+        .left{
+            width:23%;
+            background:rgba(15,23,52,0.8);
+            border:2px solid rgba(100,255,218,0.3);
+            border-radius:16px;
+            padding:14px;
+            display:flex;
+            flex-direction:column;
+            box-shadow:0 0 25px rgba(100,255,218,0.15);
+            backdrop-filter:blur(6px);
+        }
+
+        #avatarCanvas{
+            height:40%;
+            border-radius:12px;
+            border:2px solid rgba(100,255,218,0.4);
+            background:rgba(0,0,0,0.3);
+            margin-bottom:10px;
+            box-shadow:0 0 15px rgba(100,255,218,0.2);
+        }
+
+        .robot-name{
+            text-align:center;
+            color:#64ffda;
+            font-weight:bold;
+            font-size:17px;
+            text-shadow:0 0 8px #64ffda;
+            margin-bottom:8px;
+        }
+
+        .chat-box{
+            flex:1;
+            background:rgba(11,19,43,0.7);
+            border-radius:12px;
+            padding:12px;
+            overflow-y:auto;
+            font-size:15px;
+            border:1px solid rgba(100,255,218,0.2);
+            margin-bottom:10px;
+        }
+
+        .chat-item{
+            margin-bottom:10px;
+            padding:8px 10px;
+            border-radius:10px;
+            line-height:1.4;
+        }
+
+        .user{
+            background:rgba(33,150,243,0.2);
+            color:#e3f2fd;
+            text-align:right;
+            border:1px solid rgba(33,150,243,0.4);
+        }
+
+        .ai{
+            background:rgba(236,64,122,0.18);
+            color:#fce4ec;
+            text-align:left;
+            border:1px solid rgba(236,64,122,0.4);
+        }
+
+        .system{
+            background:rgba(255,215,0,0.12);
+            color:#fff3e0;
+            text-align:center;
+            border:1px solid rgba(255,215,0,0.3);
+            font-weight:bold;
+        }
+
+        .btn-group{
+            display:flex;
+            gap:10px;
+        }
+
+        .btn{
+            flex:1;
+            padding:12px;
+            border:none;
+            border-radius:12px;
+            color:#fff;
+            font-weight:bold;
+            cursor:pointer;
+            font-size:14px;
+            transition:0.25s;
+            box-shadow:0 4px 12px rgba(0,0,0,0.25);
+            position:relative;
+            overflow:hidden;
+        }
+
+        .btn:before{
+            content:"";
+            position:absolute;
+            top:0;
+            left:-100%;
+            width:100%;
+            height:100%;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+            transition:0.5s;
+        }
+
+        .btn:hover:before{
+            left:100%;
+        }
+
+        .btn:hover{
+            transform:translateY(-3px);
+            box-shadow:0 6px 18px rgba(0,0,0,0.3);
+            filter:brightness(1.2);
+        }
+
+        .btn-once{
+            background:linear-gradient(135deg,#0288d1,#03a9f4);
+            text-shadow:0 0 6px #03a9f4;
+        }
+
+        .btn-loop{
+            background:linear-gradient(135deg,#7b1fa2,#9c27b0);
+            text-shadow:0 0 6px #9c27b0;
+        }
+
+        .btn-stop{
+            background:linear-gradient(135deg,#d32f2f,#f44336);
+            text-shadow:0 0 6px #f44336;
+        }
+
+        /* ===================== 右侧3D抽奖区 ===================== */
+        .right{
+            width:77%;
+            background:#050818;
+            border-radius:16px;
+            position:relative;
+            border:2px solid rgba(255,215,0,0.3);
+            box-shadow:0 0 35px rgba(255,215,0,0.15);
+            overflow:hidden;
+        }
+
+        #lotteryCanvas{
+            width:100%;
+            height:100%;
+        }
+
+        .tip{
+            position:absolute;
+            bottom:30px;
+            left:50%;
+            transform:translateX(-50%);
+            font-size:28px;
+            color:#ffd700;
+            font-weight:bold;
+            text-shadow:0 0 18px #ffab00, 0 0 28px #ffab00;
+            white-space:nowrap;
+            text-align:center;
+            pointer-events:none;
+            transition:all 0.3s;
+        }
+
+        .tip .sub{
+            display:block;
+            font-size:16px;
+            color:#b0bec5;
+            text-shadow:0 0 8px #90a4ae;
+            margin-top:6px;
+        }
+
+        /* 复位按钮 */
+        .btn-reset{
+            position:absolute;
+            top:15px;
+            right:15px;
+            padding:10px 20px;
+            border:none;
+            border-radius:10px;
+            background:rgba(255,87,34,0.7);
+            color:#fff;
+            font-weight:bold;
+            cursor:pointer;
+            font-size:14px;
+            z-index:10;
+            transition:0.2s;
+            backdrop-filter:blur(4px);
+            border:1px solid rgba(255,87,34,0.4);
+        }
+        .btn-reset:hover{
+            background:rgba(255,87,34,0.9);
+            transform:scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="title">
+        AI小课堂——解锁科技奥秘
+        <span class="badge" id="countBadge">抽取人数：5人</span>
+        <a href="/guide" class="guide-link" target="_blank">📖 使用指南</a>
+    </h1>
+    <div class="main">
+        <div class="left">
+            <div id="avatarCanvas"></div>
+            <div class="robot-name">小艾（AI小管家）</div>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="btn-group">
+                <button class="btn btn-once" id="btnOnce">🎤 单次对话</button>
+                <button class="btn btn-loop" id="btnLoop">🔁 持续监听</button>
+                <button class="btn btn-stop" id="btnStop">🛑 停止</button>
+            </div>
+        </div>
+
+        <div class="right">
+            <div id="lotteryCanvas"></div>
+            <div class="tip" id="tip">
+                点击按钮开始语音互动
+                <span class="sub">说"开始抽取同学"启动抽奖</span>
+            </div>
+            <button class="btn-reset" id="btnReset">🔄 重置抽奖</button>
+        </div>
+    </div>
+
+    <script>
+        const students = {{ students | tojson }};
+        const chatBox = document.getElementById('chatBox');
+        const tip = document.getElementById('tip');
+        const countBadge = document.getElementById('countBadge');
+
+        // ============================================================
+        // 全局状态
+        // ============================================================
+        let isLotteryRunning = false;   // 抽奖进行中（防止重复触发）
+        let currentWinners = [];        // 最近一次中奖名单
+
+        // 全局语音播报（调用后端 macOS TTS，婷婷中文女声）
+        let currentAudio = null;
+        // 浏览器TTS语音（优先选神经网络语音，更自然）
+        let browserVoice = null;
+
+        function initTTSVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices.length) return;
+
+            // 优先级：仅限中国大陆普通话
+            // 1. Google 普通话（Chrome）
+            // 2. Eddy(zh_CN) — Apple Neural TTS
+            // 3. Shelley(zh_CN) — Apple Neural TTS
+            // 4. Tingting(zh_CN) — 婷婷
+            // 5. 任意中国大陆普通话
+            // 限定中国大陆普通话 zh_CN 或 zh-CN
+            function isCN(v) { return v.lang.includes('zh_CN') || v.lang.includes('zh-CN'); }
+            const prefs = [
+                v => isCN(v) && v.name.includes('Google'),
+                v => isCN(v) && v.name.includes('Eddy'),
+                v => isCN(v) && v.name.includes('Shelley'),
+                v => isCN(v) && v.name.includes('Tingting'),
+                v => isCN(v)
+            ];
+            for (const fn of prefs) {
+                const found = voices.find(fn);
+                if (found) { browserVoice = found; break; }
+            }
+        }
+        if (window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = initTTSVoice;
+            setTimeout(initTTSVoice, 300);
+            // Safari有时不会触发onvoiceschanged，加多次fallback
+            setTimeout(initTTSVoice, 1000);
+            setTimeout(initTTSVoice, 2000);
+        }
+
+        function speak(text) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            window.speechSynthesis.cancel();
+
+            // ===== 优先用后端 Edge TTS（微软晓晓，最自然） =====
+            fetch("/api/tts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Edge TTS failed");
+                return res.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                currentAudio = audio;
+                audio.onended = () => {
+                    URL.revokeObjectURL(url);
+                    currentAudio = null;
+                    if (loopMode && !isListening && !pendingText) {
+                        setTimeout(() => start(false), 300);
+                    }
+                };
+                audio.play().catch(() => useBrowserTTS(text));
+            })
+            .catch(() => useBrowserTTS(text));
+        }
+
+        function useBrowserTTS(text) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'zh-CN';
+            utter.rate = 0.95;
+            utter.pitch = 0.95;
+            if (browserVoice) utter.voice = browserVoice;
+            utter.onend = () => {
+                currentAudio = null;
+                if (loopMode && !isListening && !pendingText) {
+                    setTimeout(() => start(false), 300);
+                }
+            };
+            try {
+                window.speechSynthesis.speak(utter);
+            } catch(e) {
+                // 全部失败，静默
+            }
+        }
+
+        function updateBadge(count) {
+            countBadge.textContent = `抽取人数：${count}人`;
+        }
+
+        // ========================== 语音识别 ==========================
+        let rec;
+        let isListening = false;
+        let loopMode = false;
+        let recErrorCount = 0;
+
+        function playBeep() {
+            try {
+                // 用AudioContext生成简短提示音（不依赖文件）
+                const actx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = actx.createOscillator();
+                const gain = actx.createGain();
+                osc.connect(gain);
+                gain.connect(actx.destination);
+                osc.frequency.value = 880;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, actx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.15);
+                osc.start(actx.currentTime);
+                osc.stop(actx.currentTime + 0.15);
+            } catch(e) {
+                // AudioContext不可用就静音
+            }
+        }
+
+        let lastInterimTime = 0;
+        let lastInterimText = '';
+        let silenceTimer = null;
+        let pendingText = '';
+
+        // Chrome的webkitSpeechRecognition有状态泄漏bug，每次重新创建实例
+        function createRec() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return null;
+            const r = new SR();
+            r.lang = 'zh-CN';
+            r.interimResults = true;
+            r.continuous = true;
+            // continuous=true + interim=true兼容双浏览器
+            return r;
+        }
+
+        function initRec() {
+            rec = createRec();
+            if (!rec) return alert("浏览器不支持语音");
+
+            rec.onerror = (e) => {
+                if (e.error === 'not-allowed') {
+                    isListening = false;
+                    tip.innerHTML = '⚠️ 请允许使用麦克风权限，然后重新点击语音按钮';
+                }
+            };
+
+            rec.onend = () => {
+                isListening = false;
+                clearTimeout(silenceTimer);
+                rec = null;
+                // 由speak完成后的setTimeout负责重启，onend不直接触发
+            };
+
+            rec.onresult = async (e) => {
+                let finalText = '';
+                let interimText = '';
+
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    const t = e.results[i][0].transcript.trim();
+                    if (!t) continue;
+                    if (e.results[i].isFinal && t.length > finalText.length) {
+                        finalText = t;
+                    } else if (t.length > interimText.length) {
+                        interimText = t;
+                    }
+                }
+
+                if (finalText) {
+                    clearTimeout(silenceTimer);
+                    await submitVoice(finalText);
+                    return;
+                }
+
+                // interim结果：开启静默超时检测
+                if (interimText) {
+                    lastInterimText = interimText;
+                    lastInterimTime = Date.now();
+                    clearTimeout(silenceTimer);
+                    silenceTimer = setTimeout(async () => {
+                        if (lastInterimText && Date.now() - lastInterimTime >= 600) {
+                            await submitVoice(lastInterimText);
+                        }
+                    }, 1000);
+                }
+            };
+        }
+
+        async function submitVoice(text) {
+            if (!text || !text.trim() || pendingText) return;
+
+            pendingText = text;
+            clearTimeout(silenceTimer);
+            lastInterimText = '';
+
+            // 停止录音
+            if (rec) {
+                try { rec.stop(); } catch(e) {}
+            }
+
+            addMsg("user", text);
+
+            try {
+                const res = await fetch("/api/ai", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                addMsg("ai", data.reply);
+                speak(data.reply);
+                doAction(data.action);
+
+                if (data.command === "start_lottery") {
+                    if (!isLotteryRunning) performLottery();
+                }
+                if (data.command === "set_count") {
+                    const statusRes = await fetch("/api/status");
+                    const status = await statusRes.json();
+                    updateBadge(status.drawCount);
+                }
+                if (!rotating && !isLotteryRunning) {
+                    resetAllAvatars();
+                    rotating = true;
+                }
+            } catch(e) {
+                console.error('AI request failed', e);
+            }
+
+            // 3秒后允许新语音提交（防止重复提交）
+            setTimeout(() => { pendingText = ''; }, 3000);
+        }
+
+        function start(playSound) {
+            if (playSound !== false) playBeep();
+            // 每次start都创建新实例（Chrome必须这样）
+            if (rec) {
+                try { rec.stop(); } catch(e3) {}
+                rec = null;
+            }
+            initRec();
+            if (!isListening) {
+                isListening = true;
+                pendingText = '';
+                setTimeout(() => {
+                    try { rec.start(); } catch(e) {
+                        console.error('rec.start failed', e);
+                    }
+                }, 100);
+            }
+        }
+
+        function stop() {
+            loopMode = false;
+            isListening = false;
+            pendingText = '';
+            clearTimeout(silenceTimer);
+            if (rec) {
+                try { rec.stop(); } catch(e) {}
+                rec = null;
+            }
+        }
+
+        // ===================== 抽取逻辑 =====================
+        async function performLottery() {
+            if (isLotteryRunning) return;
+            isLotteryRunning = true;
+
+            // 抽取前先把sphereGroup旋转归零
+            if (sphereGroup) sphereGroup.rotation.set(0, 0, 0);
+            resetAllAvatars();
+            rotating = true;
+            tip.innerHTML = '🎲 抽奖进行中...<span class="sub">正在随机抽取幸运小朋友</span>';
+
+            await new Promise(r => setTimeout(r, 2000));
+            rotating = false;
+
+            try {
+                const res = await fetch("/api/lottery", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                currentWinners = data.winners;
+
+                if (data.winners.length > 0) {
+                    showWinners(data.winners);
+                } else {
+                    tip.innerHTML = `⚠️ 没有可抽取的同学了<span class="sub">点击"重置抽奖"重新开始</span>`;
+                }
+            } catch (err) {
+                tip.innerHTML = `❌ 抽奖出错了，请重试`;
+            }
+
+            isLotteryRunning = false;
+        }
+
+        document.getElementById('btnOnce').onclick = () => { loopMode = false; start(); };
+        document.getElementById('btnLoop').onclick = () => { loopMode = true; start(); };
+        document.getElementById('btnStop').onclick = stop;
+
+        // 重置抽奖：复位后端 awarded 列表，清零已抽取记录
+        async function resetLottery() {
+            if (isLotteryRunning) return;
+
+            await fetch("/api/reset", { method: "POST" });
+
+            // 前端复位
+            isLotteryRunning = false;
+            currentWinners = [];
+            rotating = false;
+            resetAllAvatars();
+            tip.innerHTML = '🔄 已重置所有同学<span class="sub">说"开始抽取同学"启动抽奖</span>';
+            speak("已重置抽奖，所有同学重新参与抽取");
+
+            // 刷新抽取人数显示
+            const statusRes = await fetch("/api/status");
+            const status = await statusRes.json();
+            updateBadge(status.drawCount);
+        }
+        document.getElementById('btnReset').onclick = resetLottery;
+
+        function addMsg(role, txt) {
+            const d = document.createElement('div');
+            d.className = `chat-item ${role}`;
+            d.innerText = txt;
+            chatBox.appendChild(d);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // ========================== 3D数字人 ==========================
+        let robot;
+        function initAvatar() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 0.8, 0.1, 100);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(320, 320);
+            document.getElementById('avatarCanvas').appendChild(renderer.domElement);
+
+            robot = new THREE.Group();
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.7), new THREE.MeshPhongMaterial({ color: 0xffe0bd }));
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 1.3), new THREE.MeshPhongMaterial({ color: 0x64b5f6 }));
+            body.position.y = -1.2;
+            robot.add(head, body);
+            scene.add(robot, new THREE.AmbientLight(0xffffff, 1));
+            camera.position.z = 3;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                robot.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function doAction(act) {
+            if (act === "talk") robot.position.y = 0;
+            if (act === "wave") robot.position.y = 0.15;
+            if (act === "clap") robot.position.y = -0.15;
+            setTimeout(() => robot.position.y = 0, 400);
+        }
+
+        // ========================== 3D球面抽奖（炫酷版） ==========================
+        // ================== Canvas生成彩色姓名头像 ==================
+        function createNameSprite(name, color, size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // 圆形彩色背景
+            ctx.beginPath();
+            ctx.arc(64, 64, 58, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            // 白色边框
+            ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 文字：取姓或名（2字取全名，3字取后两字）
+            const displayName = name.length <= 2 ? name : name.slice(1);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 36px "Microsoft YaHei", "PingFang SC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(displayName, 64, 64);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+            sprite.scale.set(size, size, 1);
+            return sprite;
+        }
+
+        let rotating = true;
+        let sphereGroup;
+        let lineGroup;
+        let avatarSprites = [];
+        let originalPositions = [];
+        let entranceProgress = 0;
+        let entranceActive = true;
+        const TOTAL_STUDENTS = students.length;
+        const SPHERE_RADIUS = Math.max(11, TOTAL_STUDENTS * 0.26);
+
+        function init3DLottery() {
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050818);
+
+            // 满天星（背景，不旋转）
+            for (let i = 0; i < 1200; i++) {
+                const star = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.05),
+                    new THREE.MeshBasicMaterial({ color: 0xffffff })
+                );
+                star.position.set(
+                    (Math.random() - 0.5) * 120,
+                    (Math.random() - 0.5) * 120,
+                    (Math.random() - 0.5) * 120
+                );
+                scene.add(star);
+            }
+
+            // 中心星核——一颗深邃的白蓝色小星，带光晕
+            const coreGroup = new THREE.Group();
+
+            // 核心亮点
+            const coreStar = new THREE.Mesh(
+                new THREE.SphereGeometry(0.4, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0xb3e5fc })
+            );
+            coreGroup.add(coreStar);
+
+            // 内层光晕（淡蓝半透明）
+            const innerGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.7, 16, 16),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0x81d4fa,
+                    transparent: true,
+                    opacity: 0.25
+                })
+            );
+            coreGroup.add(innerGlow);
+
+            // 外层光晕（更淡）
+            const outerGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(1.1, 16, 16),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0x4fc3f7,
+                    transparent: true,
+                    opacity: 0.10
+                })
+            );
+            coreGroup.add(outerGlow);
+
+            // 围绕星核的微粒环
+            const starParticles = new THREE.Group();
+            for (let i = 0; i < 30; i++) {
+                const a = (i / 30) * Math.PI * 2;
+                const r = 1.5 + Math.random() * 0.5;
+                const p = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.04),
+                    new THREE.MeshBasicMaterial({ color: 0x90caf9 })
+                );
+                p.position.set(Math.cos(a) * r, Math.sin(a) * r, 0);
+                p.userData = { angle: a, radius: r, speed: 0.01 + Math.random() * 0.02 };
+                starParticles.add(p);
+            }
+            coreGroup.add(starParticles);
+
+            scene.add(coreGroup);
+
+            // ===== 丝线连接（放在 sphereGroup 里一起旋转） =====
+            const linePositions = new Float32Array(TOTAL_STUDENTS * 6);
+            // 每个学生2个点：原点(0,0,0) + 学生位置
+            // 先初始化原点全为0，学生位置后续在animate里更新
+            const lineGeom = new THREE.BufferGeometry();
+            lineGeom.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+
+            const lineMat = new THREE.LineBasicMaterial({
+                color: 0x64b5f6,
+                transparent: true,
+                opacity: 0.15
+            });
+            const lines = new THREE.LineSegments(lineGeom, lineMat);
+
+            // 头像球面分布
+            sphereGroup = new THREE.Group();
+            sphereGroup.scale.set(0.01, 0.01, 0.01);
+
+            students.forEach((s, i) => {
+                const sprite = createNameSprite(s.name, s.color, 2.3);
+                sprite.userData = { ...s, index: i };
+
+                const phi = Math.acos(1 - 2 * (i + 0.5) / TOTAL_STUDENTS);
+                const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+                const x = SPHERE_RADIUS * Math.sin(phi) * Math.cos(theta);
+                const y = SPHERE_RADIUS * Math.sin(phi) * Math.sin(theta);
+                const z = SPHERE_RADIUS * Math.cos(phi);
+                sprite.position.set(x, y, z);
+                originalPositions.push({ x, y, z });
+                avatarSprites.push(sprite);
+                sphereGroup.add(sprite);
+            });
+
+            // 线添加到 sphereGroup，随球体一起旋转
+            sphereGroup.add(lines);
+            scene.add(sphereGroup);
+
+            const camera = new THREE.PerspectiveCamera(60, 16 / 9, 0.1, 100);
+            camera.position.z = SPHERE_RADIUS * 2.2;
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth * 0.77, window.innerHeight - 75);
+            document.getElementById('lotteryCanvas').appendChild(renderer.domElement);
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // ===== 更新丝线位置（按当前局部坐标连线到原点） =====
+                const posAttr = lines.geometry.attributes.position;
+                const array = posAttr.array;
+                for (let i = 0; i < TOTAL_STUDENTS; i++) {
+                    const sprite = avatarSprites[i];
+                    // 线段起点：当前sphereGroup局部坐标的原点
+                    array[i * 6] = 0;
+                    array[i * 6 + 1] = 0;
+                    array[i * 6 + 2] = 0;
+                    // 线段终点：sprite的局部坐标
+                    array[i * 6 + 3] = sprite.position.x;
+                    array[i * 6 + 4] = sprite.position.y;
+                    array[i * 6 + 5] = sprite.position.z;
+                }
+                posAttr.needsUpdate = true;
+
+                if (entranceActive) {
+                    entranceProgress += 0.015;
+                    if (entranceProgress >= 1) {
+                        entranceProgress = 1;
+                        entranceActive = false;
+                    }
+
+                    const ease = 1 - Math.pow(1 - entranceProgress, 3);
+                    const s = 0.01 + ease * 0.99;
+                    sphereGroup.scale.set(s, s, s);
+
+                    // 星核从极微点逐渐显形
+                    const coreScale = 0.01 + ease * 0.99;
+                    coreGroup.scale.set(coreScale, coreScale, coreScale);
+
+                    // 微粒环旋转
+                    starParticles.children.forEach((p) => {
+                        const d = p.userData;
+                        d.angle += d.speed;
+                        p.position.x = Math.cos(d.angle) * d.radius;
+                        p.position.y = Math.sin(d.angle) * d.radius;
+                    });
+
+                    // 丝线透明度渐变
+                    lineMat.opacity = 0.02 + ease * 0.13;
+
+                    // 星星背景渐亮
+                    const starBright = 0.5 + ease * 0.5;
+                    scene.children.forEach(child => {
+                        if (child.isMesh && child.material && child.geometry &&
+                            child.geometry.type === 'SphereGeometry' &&
+                            child.geometry.parameters.radius === 0.05) {
+                            child.material.color.setHSL(0.58, 0.3, starBright * 0.8);
+                        }
+                    });
+                }
+
+                if (rotating) {
+                    sphereGroup.rotation.x += 0.003;
+                    sphereGroup.rotation.y += 0.008;
+                }
+
+                // ===== 处理sprite缩放动画 =====
+                const now = performance.now();
+                spriteAnimations = spriteAnimations.filter(anim => {
+                    if (now < anim.startTime) return true;  // 还没开始
+                    const elapsed = now - anim.startTime;
+                    const t = Math.min(elapsed / anim.duration, 1);
+                    // easeOutBack: 带一点弹性
+                    const c1 = 1.70158;
+                    const c3 = c1 + 1;
+                    const val = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+                    const currentScale = anim.startVal + (anim.endVal - anim.startVal) * val;
+                    anim.sprite.scale.set(currentScale, currentScale, 1);
+                    return t < 1;  // 完成则移除
+                });
+
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // 完全重置所有头像到原始位置和大小（用于恢复旋转时）
+        function resetAllAvatars() {
+            avatarSprites.forEach((s, i) => {
+                s.material.opacity = 1.0;
+                s.scale.set(2.3, 2.3, 1);
+                s.position.set(originalPositions[i].x, originalPositions[i].y, originalPositions[i].z);
+            });
+            // 恢复sphereGroup旋转为0，让后续旋转从头开始
+            if (sphereGroup) {
+                sphereGroup.rotation.set(0, 0, 0);
+            }
+        }
+
+        // 中奖动画（带入场缩放的展示排布）：重置旋转 → 放至左到右 → 高亮
+        async function showWinners(winners) {
+            rotating = false;
+
+            // 先把sphereGroup旋转归零，让local坐标=世界坐标
+            sphereGroup.rotation.set(0, 0, 0);
+
+            // 重置所有到原始位置，再单独处理中奖者
+            resetAllAvatars();
+
+            const count = winners.length;
+            const spriteWidth = 5.0;
+            const gap = 1.0;
+            const spacing = spriteWidth + gap;
+            const maxTotalWidth = 22;
+            const totalWidth = count * spacing - gap;
+            const adjustedSpacing = totalWidth > maxTotalWidth
+                ? (maxTotalWidth + gap) / count
+                : spacing;
+            const adjustedScale = adjustedSpacing / (spriteWidth + gap) * spriteWidth;
+
+            const startX = -(count - 1) * adjustedSpacing / 2;
+
+            // 非中奖者变暗缩小
+            avatarSprites.forEach((s) => {
+                if (!winners.find(w => w.id === s.userData.id)) {
+                    s.material.opacity = 0.2;
+                    s.scale.set(1.6, 1.6, 1);
+                }
+            });
+
+            // 中奖者设为最终位置但scale从0开始，用动画放大
+            winners.forEach((win, idx) => {
+                const target = avatarSprites.find(x => x.userData.id === win.id);
+                if (target) {
+                    target.position.set(startX + idx * adjustedSpacing, 0, 1.5);
+                    // Z=1.5 确保显示在星核和其他精灵的前面
+                    target.material.opacity = 1.0;
+                    target.scale.set(0.1, 0.1, 1);
+                    // 用CSS动画放大
+                    animateSpriteScale(target, 0.1, adjustedScale, 600, idx * 150);
+                }
+            });
+
+            const names = winners.map(w => w.name).join("，");
+            // 获取已抽取状态
+            let totalAwarded = 0, totalStudents = 0;
+            try {
+                const sr = await fetch('/api/status');
+                const sd = await sr.json();
+                totalAwarded = sd.totalStudents - sd.remaining;
+                totalStudents = sd.totalStudents;
+            } catch(e) {}
+            tip.innerHTML = `🎉 恭喜${names}同学被抽中来参与互动！<span class="sub">本批 ${winners.length} 人 | 已抽取 ${totalAwarded}/${totalStudents}</span>`;
+
+            try { new Audio('https://qiniu.xiaobotalk.com/audio/win.mp3').play(); } catch(e) {}
+            speak(`恭喜${names}同学被抽中来参与互动`);
+        }
+
+        // 三秒内将sprite从startScale缩放到endScale
+        let spriteAnimations = [];
+        function animateSpriteScale(sprite, start, end, duration, delay) {
+            const anim = {
+                sprite,
+                startVal: start,
+                endVal: end,
+                duration,
+                startTime: performance.now() + delay
+            };
+            sprite.userData._anim = anim;
+            sprite.scale.set(start, start, 1);
+            // 存到全局列表让animate loop处理
+            spriteAnimations.push(anim);
+        }
+
+        // 在animate循环里处理（在init3DLottery的animate中添加）
+
+        // 启动时初始化抽取人数状态
+        async function initState() {
+            try {
+                const res = await fetch("/api/status");
+                const data = await res.json();
+                updateBadge(data.drawCount);
+            } catch(e) {}
+        }
+
+        // 启动
+        window.onload = () => {
+            initAvatar();
+            init3DLottery();
+            initRec();
+            initState();
+        };
+    </script>
+</body>
+</html>
