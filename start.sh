@@ -5,7 +5,7 @@
 # =============================================================
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PORT=5000
+PORT=${PORT:-5000}
 LOG_FILE="$PROJECT_DIR/server.log"
 
 echo ""
@@ -85,16 +85,23 @@ fi
 # ==================== 3. 检查端口 ====================
 echo ""
 echo "🔌 3/5 检测端口 ${PORT} 占用..."
-if [ "$SKIP_PORT_CHECK" != "true" ] && lsof -i :$PORT &>/dev/null 2>&1; then
-    OLD_PID=$(lsof -ti :$PORT)
-    echo "   ⚠️  端口 $PORT 已被 PID $OLD_PID 占用，正在关闭..."
-    kill $OLD_PID 2>/dev/null
-    sleep 1
-    if lsof -i :$PORT &>/dev/null 2>&1; then
-        kill -9 $OLD_PID 2>/dev/null
+if lsof -i :$PORT &>/dev/null 2>&1; then
+    OLD_PID=$(lsof -ti :$PORT 2>/dev/null)
+    # 检查是否是AirPlay等系统服务（PID为0或无PID）
+    if [ -z "$OLD_PID" ] || [ "$OLD_PID" -le 1 ]; then
+        echo "   ⚠️  端口 $PORT 被系统服务占用（如AirPlay接收器），无法关闭"
+        PORT=5001
+        echo "   ➡️  自动切换端口: ${PORT}"
+    else
+        echo "   ⚠️  端口 $PORT 已被 PID $OLD_PID 占用，正在关闭..."
+        kill $OLD_PID 2>/dev/null
         sleep 1
+        if lsof -i :$PORT &>/dev/null 2>&1; then
+            kill -9 $OLD_PID 2>/dev/null
+            sleep 1
+        fi
+        echo "   ✅ 端口已释放"
     fi
-    echo "   ✅ 端口已释放"
 else
     echo "   ✅ 端口 $PORT 可用"
 fi
@@ -121,20 +128,28 @@ else:
 echo ""
 echo "🚀 5/5 启动服务器..."
 cd "$PROJECT_DIR"
-nohup python3 app.py > "$LOG_FILE" 2>&1 &
+PORT=$PORT nohup python3 app.py > "$LOG_FILE" 2>&1 &
 SERVER_PID=$!
 
 # 等待服务就绪
 echo -n "   等待服务就绪"
-for i in $(seq 1 10); do
-    if curl -s "http://localhost:$PORT" > /dev/null 2>&1; then
+for i in $(seq 1 15); do
+    if curl -s "http://localhost:$PORT/ping" > /dev/null 2>&1; then
         echo ""
-        echo "   ✅ 服务已就绪 (PID: $SERVER_PID)"
+        echo "   ✅ 服务已就绪 (PID: $SERVER_PID, 端口: $PORT)"
+        SERVER_READY=true
         break
     fi
     echo -n "."
-    sleep 0.5
+    sleep 1
 done
+
+if [ "$SERVER_READY" != "true" ]; then
+    echo ""
+    echo "❌ 服务器启动失败，请查看日志:"
+    tail -30 "$LOG_FILE"
+    exit 1
+fi
 
 if ! kill -0 $SERVER_PID 2>/dev/null; then
     echo ""

@@ -4,31 +4,29 @@
 # =============================================================
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PORT=5000
 
 echo "=========================================="
 echo "  🛑 AI小课堂 - 系统关闭"
 echo "=========================================="
 echo ""
 
-# 查找并关闭占用端口的进程
-PID=$(lsof -ti :$PORT 2>/dev/null)
+# 查找并关闭python app.py进程（不限端口）
+PID=$(ps aux | grep '[p]ython.*app.py' | awk '{print $2}')
 
 if [ -z "$PID" ]; then
-    echo "ℹ️  未检测到运行中的服务器 (端口 $PORT)"
+    echo "ℹ️  未检测到运行中的服务器"
 else
     echo "🔍 找到服务器进程 PID: $PID"
     kill $PID 2>/dev/null
     sleep 1
 
-    # 确认关闭
     if kill -0 $PID 2>/dev/null; then
         echo "⏳ 进程未响应，强制关闭..."
         kill -9 $PID 2>/dev/null
         sleep 1
     fi
 
-    if lsof -ti :$PORT &>/dev/null; then
+    if kill -0 $PID 2>/dev/null; then
         echo "❌ 关闭失败，请手动执行: kill -9 $PID"
         exit 1
     else
